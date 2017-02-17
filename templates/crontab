@@ -1,0 +1,7 @@
+MAILTO=root
+{% for key, job in borg_jobs.iteritems() %}
+{{ job.archive_rhythm }} root /usr/local/bin/borgenv-create "/etc/borgbackup/jobs/{{ key }}"
+{% if job.prune_rhythm | default(False) %}
+{{ job.prune_rhythm }} root /usr/local/bin/borgenv-prune "/etc/borgbackup/jobs/{{ key }}"
+{% endif %}
+{% endfor %}

@@ -1,0 +1,77 @@
+---
+- name: install build dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+  - python3-pip
+  - libssl-dev
+  - liblz4-dev
+  - python3-dev
+  - libacl1-dev
+  tags:
+  - borg
+
+- name: install borgbackup
+  pip:
+    name: "{{ item }}"
+    state: latest
+    executable: pip3
+  with_items:
+  - borgbackup
+  tags:
+  - borg
+
+- name: deploy wrapper scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: u=rwx,go=rx
+  with_items:
+  - borgenv-prune
+  - borgenv-create
+  tags:
+  - borg
+
+- name: create config directory
+  file:
+    state: directory
+    dest: "/etc/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rx,go-rwx
+  with_items:
+  - borgbackup/
+  - borgbackup/repositories/
+  - borgbackup/jobs/
+  tags:
+  - borg
+
+- name: deploy environments
+  template:
+    src: job.sh
+    dest: "/etc/borgbackup/jobs/{{ item.key }}"
+    owner: root
+    group: root
+    mode: u=r,go-rwx
+  with_dict: "{{ borg_jobs }}"
+  tags:
+  - borg
+
+- name: deploy keys
+  copy:
+    content: "{{ item.value.private_key }}"
+    dest: "/etc/borgbackup/repositories/{{ item.key }}.key"
+    owner: root
+    group: root
+    mode: u=r,go-rwx
+  with_dict: "{{ borg_repositories }}"
+  tags:
+  - borg
+
+- name: deploy crontab
+  template:
+    src: crontab
+    dest: /etc/cron.d/borgbackup
+  tags:
+  - borg
