@@ -9,6 +9,9 @@
   - liblz4-dev
   - python3-dev
   - libacl1-dev
+  - python3-setuptools
+  - cython3
+  - build-essential
   tags:
   - borg
 
