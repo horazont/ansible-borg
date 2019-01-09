@@ -3,4 +3,4 @@ set -euo pipefail
 env="$1"
 shift
 . "$env"
-/usr/local/bin/borg prune "$@" $PRUNE_FLAGS
+/usr/bin/borg prune "$@" $PRUNE_FLAGS
