@@ -1,0 +1,3 @@
+Package: borgbackup python3-msgpack
+Pin: release a={{ apt_release | default(ansible_distribution_release) }}-backports
+Pin-Priority: 990
