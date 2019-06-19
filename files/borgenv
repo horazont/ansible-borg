@@ -1,0 +1,61 @@
+#!/bin/bash
+set -euo pipefail
+env="$1"
+shift
+action="$1"
+shift
+. "$env"
+
+metricdir=/var/lib/prometheus/node-exporter
+metricfile="$metricdir/borgbackup-$action-$JOB_NAME@$JOB_REPO.prom"
+metricfile_tmp="$metricdir/.$(basename "$metricfile")-$$"
+
+labels="{borg_path=\"$JOB_PATH\",borg_remote=\"$JOB_REPO\",borg_action=\"$action\"}"
+
+function metrics() {
+    cat >> "$metricfile_tmp"
+}
+
+function finalize() {
+    status=$?
+    metrics <<EOF
+# HELP borgpush_last_run_end timestamp of end of last run
+# TYPE gauge
+borgpush_last_run_end$labels $(date +%s.%N)
+
+# HELP borgpush_exit_status exit status of the script
+borgpush_exit_status$labels $status.0
+EOF
+    sudo mv -f "$metricfile_tmp" "$metricfile"
+    exit $status
+}
+
+trap finalize EXIT
+
+metrics <<EOF
+# HELP borgpush_last_run_start timestamp of end of last run
+# TYPE gauge
+borgpush_last_run_start$labels $(date +%s.%N)
+EOF
+
+flags=""
+case $action in
+    create)
+        flags="$CREATE_FLAGS"
+        ;;
+    prune)
+        flags="$PRUNE_FLAGS"
+        ;;
+    *)
+        ;;
+esac
+
+t0=$(date +%s.%N)
+/usr/bin/borg "$action" "$@" $flags
+t1=$(date +%s.%N)
+
+metrics <<EOF
+# HELP borgpush_duration_seconds time for pg_dump and gzip
+# TYPE borgpush_duration_seconds gauge
+borgpush_duration_seconds$labels $(echo "$t1-$t0" | bc)
+EOF

@@ -29,8 +29,7 @@
     dest: "/usr/local/bin/{{ item }}"
     mode: u=rwx,go=rx
   with_items:
-  - borgenv-prune
-  - borgenv-create
+  - borgenv
   tags:
   - borg
 
@@ -51,7 +50,7 @@
 - name: deploy environments
   template:
     src: job.sh
-    dest: "/etc/borgbackup/jobs/{{ item.key }}"
+    dest: "/etc/borgbackup/jobs/{{ item.key }}@{{ item.value.repository }}"
     owner: root
     group: root
     mode: u=r,go-rwx
@@ -74,5 +73,15 @@
   template:
     src: crontab
     dest: /etc/cron.d/borgbackup
+  tags:
+  - borg
+
+- name: add job definitions to prometheus
+  template:
+    src: definitions.prom
+    dest: /var/lib/prometheus/node-exporter/borgbackup-definitions.prom
+    owner: root
+    group: root
+    mode: ugo=r
   tags:
   - borg

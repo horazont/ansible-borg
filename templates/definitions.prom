@@ -1,0 +1,8 @@
+# NAME borgpush_defined Role metric which indicates that a borg push job is defined
+# TYPE borgpush_defined gauge
+{% for key, job in borg_jobs.items() %}
+borgpush_defined{borg_action="create", borg_remote="{{ job.repository }}", borg_path="{{ job.path }}"} 1.0
+{% if job.prune_rhythm | default(False) %}
+borgpush_defined{borg_action="prune", borg_remote="{{ job.repository }}", borg_path="{{ job.path }}"} 1.0
+{% endif %}
+{% endfor %}

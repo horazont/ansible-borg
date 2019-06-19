@@ -1,7 +1,7 @@
 MAILTO=root
-{% for key, job in borg_jobs.iteritems() %}
-{{ job.archive_rhythm }} root /usr/local/bin/borgenv-create "/etc/borgbackup/jobs/{{ key }}"
+{% for key, job in borg_jobs.items() %}
+{{ job.archive_rhythm }} root /usr/local/bin/borgenv "/etc/borgbackup/jobs/{{ key }}@{{ job.repository }}" create
 {% if job.prune_rhythm | default(False) %}
-{{ job.prune_rhythm }} root /usr/local/bin/borgenv-prune "/etc/borgbackup/jobs/{{ key }}"
+{{ job.prune_rhythm }} root /usr/local/bin/borgenv "/etc/borgbackup/jobs/{{ key }}@{{ job.repository }}" prune
 {% endif %}
 {% endfor %}
