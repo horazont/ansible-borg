@@ -12,6 +12,7 @@
     name: ['borgbackup']
     state: absent
     executable: pip3
+  failed_when: false
   tags:
   - borg
 
