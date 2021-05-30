@@ -51,11 +51,11 @@
 - name: deploy environments
   template:
     src: job.sh
-    dest: "/etc/borgbackup/jobs/{{ item.key }}@{{ item.value.repository }}"
+    dest: "/etc/borgbackup/jobs/{{ item.name }}@{{ item.repository }}"
     owner: root
     group: root
     mode: u=r,go-rwx
-  with_dict: "{{ borg_jobs }}"
+  loop: "{{ borg_jobs }}"
   tags:
   - borg
 
